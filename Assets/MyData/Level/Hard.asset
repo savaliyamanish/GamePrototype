@@ -16,8 +16,8 @@ MonoBehaviour:
   displayName: Hard
   rows: 5
   columns: 6
-  baseMatchScore: 50
-  mismatchPenalty: 5
+  baseMatchScore: 100
+  mismatchPenalty: 10
   comboBonus: 20
   itemSprites:
   - {fileID: 617637666, guid: 88f974c5ba2b5174ebf12b95c0a1fa2b, type: 3}

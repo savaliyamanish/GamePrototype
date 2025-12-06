@@ -57,15 +57,16 @@ public class GameBoard : MonoBehaviour
             item.Setup(ids[i],level.itemSprites[ids[i]],()=>OnItemClicked(item));
             items.Add(item);
         }
-        StartCoroutine(StartingGame());
+        StartCoroutine(StartingGameAnimation());
     }
     
-    IEnumerator StartingGame()
+    IEnumerator StartingGameAnimation()
     {
         var waitTime =new WaitForSeconds(.05f);  
         yield return waitTime;
         for (int i = 0; i < items.Count; i++)
         {
+            if(items[i].IsMatched) continue;
             items[i].ShowCard(false);
             yield return waitTime;
         }
@@ -73,6 +74,7 @@ public class GameBoard : MonoBehaviour
         
         for (int i = 0; i < items.Count; i++)
         {
+            if(items[i].IsMatched) continue;
             items[i].FlipAndOpen();
             yield return waitTime;
 
@@ -80,11 +82,61 @@ public class GameBoard : MonoBehaviour
         yield return new WaitForSeconds(currentLevel.gameStartTileShowTime);        
         for (int i = 0; i < items.Count; i++)
         {
+            if(items[i].IsMatched) continue;
             items[i].FlipAndClose();
             yield return waitTime;
 
         }
+        SaveGameProgress();
         isBoardBusy=false;
+    }
+    public void LoadGameBoardFromSave(GameLevel level, GameSaveData data)
+    {
+        isBoardBusy = true;
+        ClearBoard();
+
+        currentLevel = level;
+
+        currentGameScore = data.currentScore;
+        currentGameMatchedCount = data.matchedCount;
+        currentScoreComboCount = data.comboCount;
+
+        gameLevelLbl.text = $"Game Level : {level.displayName}";
+        UpdateUI();
+
+        int rows = currentLevel.rows;
+        int columns = currentLevel.columns;
+
+        ConfigureGridLayout(rows, columns);
+
+        int totalTiles = data.itemIds.Length;
+
+        for (int i = 0; i < totalTiles; i++)
+        {
+            BoardItem item = Instantiate(itemPrefab, gridContainer);
+            int id = data.itemIds[i];
+
+            item.Setup(id, level.itemSprites[id], () => OnItemClicked(item));
+            items.Add(item);
+
+            // restore visual state
+            if (data.matched[i])
+            {
+                item.SetAsMatched();
+                item.HideCard(0f); 
+            }
+            else if (data.open[i])
+            {
+                item.ShowCard(true, 0f); 
+            }
+            else
+            {
+                item.ShowCard(false, 0f); 
+            }
+        }
+
+        StartCoroutine(StartingGameAnimation());
+        
     }
 
     private BoardItem firstSelected = null;
@@ -135,6 +187,7 @@ public class GameBoard : MonoBehaviour
                     
             firstSelected.HideCard();
             secondSelected.HideCard();
+
         }
         else
         {
@@ -149,11 +202,13 @@ public class GameBoard : MonoBehaviour
         
         firstSelected = null;
         secondSelected = null;
+        SaveGameProgress();
         isBoardBusy = false;
         if(currentGameMatchedCount >=currentLevel.PairCount)
         {
             yield return new WaitForSeconds(0.5f);        
             GameplayManager.Instance.ShowGameOver(currentLevel.displayName,currentGameScore,currentGameMatchedCount);
+            SaveSystem.ClearSaveGameData();
         }
     }
     private void ConfigureGridLayout(int rows, int columns)
@@ -189,5 +244,31 @@ public class GameBoard : MonoBehaviour
         gameScoreLbl.text=$"Score :  {currentGameScore}";
         gameMatchedLbl.text=$"Matched : {currentGameMatchedCount}/{currentLevel.PairCount}";
     }
+    private void SaveGameProgress()
+    {
+        
+        GameSaveData data = new GameSaveData();
+        data.levelId = currentLevel.levelId;
+
+        data.currentScore = currentGameScore;
+        data.matchedCount = currentGameMatchedCount;
+        data.comboCount = currentScoreComboCount;
+
+        int count = items.Count;
+        data.itemIds = new int[count];
+        data.matched = new bool[count];
+        data.open = new bool[count];
+
+        for (int i = 0; i < count; i++)
+        {
+            var item = items[i];
+            data.itemIds[i] = item.ItemId;
+            data.matched[i] = item.IsMatched;
+            data.open[i] = item.IsOpen;
+        }
+
+        SaveSystem.SaveGameData(data);
+    }
+
 
 }
