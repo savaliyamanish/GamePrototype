@@ -27,12 +27,12 @@ public class GameBoard : MonoBehaviour
     private int currentScoreComboCount=0;
     void Start()
     {
-        ClearGrid();
+        ClearBoard();
     }
-    public void SetupGrid(GameLevel level)
+    public void SetupGameBoard(GameLevel level)
     {
         isBoardBusy=true;
-        ClearGrid();
+        ClearBoard();
         
         currentLevel=level;
 
@@ -173,7 +173,7 @@ public class GameBoard : MonoBehaviour
         gridLayout.cellSize = new Vector2(cellSize, cellSize);
     }
 
-    private void ClearGrid()
+    public void ClearBoard()
     {
         foreach (var t in items)
         {

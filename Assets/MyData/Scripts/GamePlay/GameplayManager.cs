@@ -1,11 +1,16 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
 public class GameplayManager : MonoBehaviour
 {
 
-    public GameLevel currentLevel;
+    public List<GameLevel> gameLevels;
     public GameBoard gameBoard;
+    
+    [Header("Main Menu")]
+    public LeanPopup mainMenuPopup;
+    public TMP_Dropdown MP_levelDropDown;
     
     [Header("Game Over UI")]
     public LeanPopup gameoverPopup;
@@ -22,8 +27,20 @@ public class GameplayManager : MonoBehaviour
     }
     private void Start()
     {
+        Setup();
+    }
+    private void Setup()
+    {
+        MP_levelDropDown.options.Clear();
+        for (int i = 0; i < gameLevels.Count; i++)
+        {
+            MP_levelDropDown.options.Add(new TMP_Dropdown.OptionData(){text=gameLevels[i].displayName});
+        }
+        MP_levelDropDown.value=0;
+        MP_levelDropDown.RefreshShownValue();
         gameoverPopup.SetToClosePos();
-        gameBoard.SetupGrid(currentLevel);
+        mainMenuPopup.SetToOpenPos();
+        
     }
     public void ShowGameOver(string levelName,int score,int matched)
     {
@@ -35,8 +52,13 @@ public class GameplayManager : MonoBehaviour
     }
     public void ReloadToMainManu()
     {
+        gameBoard.ClearBoard();
         gameoverPopup.Close();
-        gameBoard.SetupGrid(currentLevel);
-        
+        mainMenuPopup.Open();        
+    }
+    public void OnPlayBtn()
+    {        
+        mainMenuPopup.Close();
+        gameBoard.SetupGameBoard(gameLevels[MP_levelDropDown.value]);
     }
 }

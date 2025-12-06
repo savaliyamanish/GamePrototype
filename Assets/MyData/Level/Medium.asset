@@ -10,16 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 875df56d26eadae4a96e42d93351994f, type: 3}
-  m_Name: Easy
+  m_Name: Medium
   m_EditorClassIdentifier: 
-  levelId: easy
-  displayName: Easy
+  levelId: medium
+  displayName: Medium
   rows: 2
-  columns: 2
+  columns: 3
   baseMatchScore: 50
   mismatchPenalty: 5
   comboBonus: 20
   itemSprites:
   - {fileID: 617637666, guid: 88f974c5ba2b5174ebf12b95c0a1fa2b, type: 3}
   - {fileID: 311237124, guid: 88f974c5ba2b5174ebf12b95c0a1fa2b, type: 3}
+  - {fileID: 886162622, guid: 88f974c5ba2b5174ebf12b95c0a1fa2b, type: 3}
   gameStartTileShowTime: 1.5
