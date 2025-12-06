@@ -23,4 +23,4 @@ MonoBehaviour:
   - {fileID: 617637666, guid: 88f974c5ba2b5174ebf12b95c0a1fa2b, type: 3}
   - {fileID: 311237124, guid: 88f974c5ba2b5174ebf12b95c0a1fa2b, type: 3}
   - {fileID: 886162622, guid: 88f974c5ba2b5174ebf12b95c0a1fa2b, type: 3}
-  gameStartTileShowTime: 3
+  gameStartTileShowTime: 1.5

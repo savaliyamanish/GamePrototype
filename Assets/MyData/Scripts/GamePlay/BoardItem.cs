@@ -83,6 +83,7 @@ public class BoardItem : MonoBehaviour
     }
     private void FlipCardAnimation(UnityAction atFlipAction,float animTime)
     {
+        AudioManager.Instance.PlayFlip();
          itemContent.transform.LeanScaleX(0,animTime*.5f).setOnComplete(
             () =>
             {

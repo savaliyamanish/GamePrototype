@@ -1,12 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class GameBoard : MonoBehaviour
 {
-    [Header("Grid UI")]
+    [Header("Score UI")]
+    public TextMeshProUGUI gameLevelLbl;
+    public TextMeshProUGUI gameScoreLbl;
+    public TextMeshProUGUI gameMatchedLbl;
+    public MessagePopup messagePopup;
+
+    [Header("Board ")]
     [SerializeField] private RectTransform gridContainer;
     [SerializeField] private GridLayoutGroup gridLayout;
 
@@ -15,6 +22,7 @@ public class GameBoard : MonoBehaviour
     private GameLevel currentLevel;
     private  List<BoardItem> items = new List<BoardItem>();    
     private bool isBoardBusy = false;
+    private int currentGameMatchedCount=0;
     private int currentGameScore=0;
     private int currentScoreComboCount=0;
     void Start()
@@ -32,10 +40,14 @@ public class GameBoard : MonoBehaviour
         int columns = currentLevel.columns;
         int totalTiles = currentLevel.CardCount;
         currentGameScore=0;
-
+        currentGameMatchedCount=0;
+        currentScoreComboCount=0;
+        
+        gameLevelLbl.text=$"Game Level : {level.displayName}";
+        UpdateUI();
         ConfigureGridLayout(rows, columns);
-        var ids= currentLevel.GetShuffleIdsForItems();
 
+        var ids= currentLevel.GetShuffleIdsForItems();
         for (int i = 0; i < totalTiles; i++)
         {
             int row = i / columns;
@@ -109,22 +121,40 @@ public class GameBoard : MonoBehaviour
 
             var comboBonus = (currentScoreComboCount*currentLevel.comboBonus);
             currentGameScore += (currentLevel.baseMatchScore + comboBonus);
+            
+            messagePopup.ShowMessage($"<color=green>+{currentLevel.baseMatchScore}</color>");
+            if(comboBonus > 0)
+            {               
+                messagePopup.ShowMessage($"Combo {currentScoreComboCount}",.2f);
+                messagePopup.ShowMessage($"<color=green>+{comboBonus}</color>",.4f);             
+            }       
+            AudioManager.Instance.PlayMatch();
             currentScoreComboCount++;
+            currentGameMatchedCount++;
+            UpdateUI();
+                    
+            firstSelected.HideCard();
+            secondSelected.HideCard();
         }
         else
         {
             currentGameScore = Mathf.Max(0,currentGameScore-currentLevel.mismatchPenalty);
             currentScoreComboCount=0;
-
+            messagePopup.ShowMessage($"<color=red>+{currentLevel.mismatchPenalty}</color>");
+            UpdateUI();
+            AudioManager.Instance.PlayMismatch();
             firstSelected.FlipAndClose();
             secondSelected.FlipAndClose();
-        }
-
-        yield return new WaitForSeconds(0.3f);
-
+        }    
+        
         firstSelected = null;
         secondSelected = null;
         isBoardBusy = false;
+        if(currentGameMatchedCount >=currentLevel.PairCount)
+        {
+            yield return new WaitForSeconds(0.5f);        
+            GameplayManager.Instance.ShowGameOver(currentLevel.displayName,currentGameScore,currentGameMatchedCount);
+        }
     }
     private void ConfigureGridLayout(int rows, int columns)
     {
@@ -154,5 +184,10 @@ public class GameBoard : MonoBehaviour
         }
         items.Clear();
     }
-    
+    private void UpdateUI()
+    {        
+        gameScoreLbl.text=$"Score :  {currentGameScore}";
+        gameMatchedLbl.text=$"Matched : {currentGameMatchedCount}/{currentLevel.PairCount}";
+    }
+
 }
